@@ -1,143 +1,127 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-      <!-- File Management by Felix Salzer for tabbs vital GmbH 2023 -->
+    <!-- File Management by Felix Salzer for tabbs vital GmbH 2023 -->
     <meta charset="UTF-8">
     <title>File Management</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <a><img src="tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo einfügen -->
-            <a class="active" href="mng.html"> Digital Signage File Management</a>
-            <a href="index.html" target="_blank">Player</a>
-            <a href="https://tabbs.de" target="_blank">tabbs.de</a>
-        </nav>
-    </header>
-    <main>
-        <h1>Dateien für Digital Signage Screens verwalten</h1>
-        
-        <h2>Aktuelle Dateien:</h2>
-        <div id="file-list">
-            <!-- Die Liste der Dateien wird hier als Bilder mit Beschriftung angezeigt -->
-        </div>
-        
-        <h2>Neue Datei hochladen:</h2>
-        <form id="upload-form" enctype="multipart/form-data">
-            <input type="file" name="file" id="file-input">
-            <button type="submit">Hochladen</button>
-        </form>
+<header>
+    <nav>
+        <a><img src="tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo einfügen -->
+        <a class="active" href="mng.html"> Digital Signage File Management</a>
+        <a href="index.html" target="_blank">Player</a>
+        <a href="https://tabbs.de" target="_blank">tabbs.de</a>
+    </nav>
+</header>
+<main>
+    <h1>Dateien für Digital Signage Screens verwalten</h1>
 
-        <h2>Datei löschen:</h2>
-        <form id="delete-form">
-            <select id="delete-select">
-            <!-- Die Liste der Dateien wird hier als Optionen angezeigt -->
-            </select>
-            <button type="submit">Löschen</button>
-        </form>
-    </main>
-  <script>
+    <h2>Aktuelle Dateien:</h2>
+    <div id="file-list">
+        <!-- Die Liste der Dateien wird hier als Bilder mit Beschriftung und Löschen-Icon angezeigt -->
+    </div>
+
+    <h2>Neue Datei hochladen:</h2>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" id="file-input">
+        <button type="submit">Hochladen</button>
+    </form>
+</main>
+<script>
     function updateFileList() {
-      var fileList = document.getElementById('file-list');
-      fileList.innerHTML = '';
+        var fileList = document.getElementById('file-list');
+        fileList.innerHTML = '';
 
-      // AJAX-Anfrage an den Server, um die Liste der Dateien zu erhalten
-      // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Dateiliste zurückzugeben
-      // Beispiel: 'get_file_list.php'
-      // Der Server sollte eine JSON- oder Textantwort mit den Dateinamen im "content"-Ordner zurückgeben
-      // Beispielantwort: ['datei1.png', 'datei2.jpg', 'datei3.txt']
-      fetch('get_file_list.php')
-        .then(response => response.json())
-        .then(data => {
-          data.sort(); // Alphabetisch sortieren
+        // AJAX-Anfrage an den Server, um die Liste der Dateien zu erhalten
+        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Dateiliste zurückzugeben
+        // Beispiel: 'get_file_list.php'
+        // Der Server sollte eine JSON- oder Textantwort mit den Dateinamen im "content"-Ordner zurückgeben
+        // Beispielantwort: ['datei1.png', 'datei2.jpg', 'datei3.txt']
+        fetch('get_file_list.php')
+            .then(response => response.json())
+            .then(data => {
+                data.sort(); // Alphabetisch sortieren
 
-          data.forEach(filename => {
-            var container = document.createElement('div');
-            var img = document.createElement('img');
-            img.src = 'content/' + filename;
-            img.alt = filename;
-            img.className = 'preview';
-            container.appendChild(img);
+                data.forEach(filename => {
+                    var container = document.createElement('div');
+                    var img = document.createElement('img');
+                    container.className = 'file-container';
+                    img.src = 'content/' + filename;
+                    img.alt = filename;
+                    img.className = 'preview';
+                    container.appendChild(img);
 
-            var label = document.createElement('p');
-            label.textContent = filename;
-            label.className = 'label';
-            container.appendChild(label);
+                    var label = document.createElement('p');
+                    label.textContent = filename;
+                    label.className = 'label';
+                    container.appendChild(label);
 
-            fileList.appendChild(container);
-          });
+                    var deleteIcon = document.createElement('i');
+                    deleteIcon.className = 'fas fa-trash-alt delete-icon';
+                    deleteIcon.addEventListener('click', function () {
+                        if (window.confirm('Möchten Sie die Datei "' + filename + '" wirklich löschen?')) {
+                            deleteFile(filename);
+                        }
+                    });
+                    container.appendChild(deleteIcon);
 
-          // Dropdown-Liste aktualisieren
-          var deleteSelect = document.getElementById('delete-select');
-          deleteSelect.innerHTML = '';
-          data.forEach(filename => {
-            var option = document.createElement('option');
-            option.value = filename;
-            option.textContent = filename;
-            deleteSelect.appendChild(option);
-          });
-        })
-        .catch(error => {
-          console.error('Fehler beim Abrufen der Dateiliste: ', error);
-        });
+                    fileList.appendChild(container);
+                });
+            })
+            .catch(error => {
+                console.error('Fehler beim Abrufen der Dateiliste: ', error);
+            });
     }
 
     function deleteFile(filename) {
-      // AJAX-Anfrage an den Server, um die Datei zu löschen
-      // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei zu löschen
-      // Beispiel: 'delete_file.php'
-      fetch('delete_file.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ filename: filename })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        updateFileList();
-      })
-      .catch(error => {
-        console.error('Fehler beim Löschen der Datei: ', error);
-      });
+        // AJAX-Anfrage an den Server, um die Datei zu löschen
+        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei zu löschen
+        // Beispiel: 'delete_file.php'
+        fetch('delete_file.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({filename: filename})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                updateFileList();
+            })
+            .catch(error => {
+                console.error('Fehler beim Löschen der Datei: ', error);
+            });
     }
 
-    document.getElementById('upload-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-      var fileInput = document.getElementById('file-input');
-      var formData = new FormData();
-      formData.append('file', fileInput.files[0]);
+    document.getElementById('upload-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var fileInput = document.getElementById('file-input');
+        var formData = new FormData();
+        formData.append('file', fileInput.files[0]);
 
-      // AJAX-Anfrage an den Server, um die Datei hochzuladen
-      // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei hochzuladen
-      // Beispiel: 'upload_file.php'
-      fetch('upload_file.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        updateFileList();
-      })
-      .catch(error => {
-        console.error('Fehler beim Hochladen der Datei: ', error);
-      });
-    });
-
-    document.getElementById('delete-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-      var deleteSelect = document.getElementById('delete-select');
-      var selectedFileName = deleteSelect.value;
-      if (selectedFileName) {
-        deleteFile(selectedFileName);
-      }
+        // AJAX-Anfrage an den Server, um die Datei hochzuladen
+        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei hochzuladen
+        // Beispiel: 'upload_file.php'
+        fetch('upload_file.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                updateFileList();
+            })
+            .catch(error => {
+                console.error('Fehler beim Hochladen der Datei: ', error);
+            });
     });
 
     // Beim Laden der Seite die Dateiliste aktualisieren
     updateFileList();
-  </script>
+</script>
 </body>
 </html>

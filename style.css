@@ -70,19 +70,32 @@ button {
 }
 #file-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
   border-style: solid;
   border-radius: 10px;
   padding: 20px;
-  width: fit-content;
+  width: 100%; /* Ändert die Breite auf 100%, um die gesamte Breite des Containers zu nutzen */
   background-color: #003260;
-  color: #ffffff;
+  overflow-x: auto; /* Zeigt einen horizontalen Scrollbalken, wenn der Inhalt zu breit wird */
+}
+.file-container {
+  margin: 5px;
+  box-shadow: 0 0 15px 0 rgba(255, 255, 255, 0.9);
+  background-color: white;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column; /* Ändert die Ausrichtung auf vertikal */
+  align-items: center; /* Zentriert die Elemente horizontal */
+  justify-content: space-between;
+  padding: 10px;
 }
 .preview {
   width: 300px;
-  height: auto;
-  margin: 5px;
-  box-shadow: 0 0 15px 0 rgba(255, 255, 255, 0.9);
+  padding: 10px;
+}
+.delete-icon {
+  color: rgba(255, 0, 0, 0.616);
+  cursor: pointer;
 }
 .label {
   margin: 0px;
