@@ -1,62 +1,183 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <!-- Player by Felix Salzer for tabbs vital GmbH 2023 -->
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="300"> <!-- Aktualisiere die Seite alle 5 Minuten -->
-  <title>TABBS Digital Signage Player</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Slideshow Player</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #slideshow-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000; /* Optional: Set a background color in case the image aspect ratio doesn't match the screen */
+        }
+
+        #slideshow-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
-  <div id="images">
-    <!-- Die Bilder werden hier angezeigt -->
-  </div>
+    <div id="slideshow-container">
+        <!-- Images will be displayed here -->
+    </div>
 
-  <script>
-    var currentIndex = 0;
-    var images = [];
-    var imageDiv = document.getElementById('images');
+    <script>
+        var imageUrls = [];
+        var currentIndex = 0;
+        var timer;
+        var timeCheckInterval;
+        var currentSettings = null;
 
-    function hideAllImages() {
-      images.forEach(function(image) {
-        image.style.display = 'none';
-      });
-    }
-
-    function showNextImage() {
-      hideAllImages();
-      currentIndex = (currentIndex + 1) % images.length;
-      images[currentIndex].style.display = 'block';
-      setTimeout(showNextImage, 20000);
-    }
-
-    function loadImages() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status === 200) {
-            images = [];
-            var fileList = xhr.responseText.split('\n').filter(Boolean);
-            fileList.forEach(function(filename) {
-              var img = new Image();
-              img.src = filename;
-              images.push(img);
-              imageDiv.appendChild(img);
-            });
-            currentIndex = -1; // Setze den Index auf -1, damit das nächste Bild beim Start sofort angezeigt wird
-            showNextImage();
-          } else {
-            console.error('Failed to load images.');
-          }
+        function loadSettings() {
+            fetch('settings.txt')
+                .then(response => response.text())
+                .then(data => {
+                    var settings = parseSettings(data);
+                    currentSettings = settings; // Store the current settings
+                    startSlideshow(settings);
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Einstellungen: ', error);
+                });
         }
-      };
-      xhr.open('GET', 'get_images.php', true); // Ersetzen Sie 'get_images.php' durch den tatsächlichen Dateinamen
-      xhr.send();
-    }
 
-    window.onload = function() {
-      loadImages();
-    };
-  </script>
+        function parseSettings(data) {
+        var settings = {};
+        var lines = data.trim().split('\n');
+        lines.forEach(line => {
+            var parts = line.split(':');
+            var key = parts[0].trim();
+            var value = parts.slice(1).join(':').trim(); // Rejoin the time fields in case they contain ':'
+            settings[key] = value;
+        });
+        return settings;
+        }
+
+        function loadFileOrder() {
+            fetch('file_order.txt')
+                .then(response => response.text())
+                .then(data => {
+                    imageUrls = parseFileOrder(data);
+                    if (imageUrls.length > 0) {
+                        showNextImage();
+                    }
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Dateireihenfolge: ', error);
+                });
+        }
+
+        function parseFileOrder(data) {
+            var lines = data.trim().split('\n');
+            return lines;
+        }
+
+        function startSlideshow(settings) {
+            var startHour = parseInt(settings.start_time.split(':')[0]);
+            var endHour = parseInt(settings.end_time.split(':')[0]);
+            var currentHour = new Date().getHours();
+
+            if (currentHour >= startHour && currentHour < endHour) {
+                loadFileOrder();
+                var duration = parseInt(settings.duration);
+                timer = setInterval(showNextImage, duration);
+            } else {
+                // Outside the specified time window, check every minute if time window changed
+                timeCheckInterval = setInterval(function () {
+                    loadSettings();
+                    checkTimeWindow(settings);
+                }, 60000); // Check every minute
+            }
+        }
+
+        function checkTimeWindow(settings) {
+            var startHour = parseInt(settings.start_time.split(':')[0]);
+            var endHour = parseInt(settings.end_time.split(':')[0]);
+            var currentHour = new Date().getHours();
+
+            if (currentHour >= startHour && currentHour < endHour) {
+                clearInterval(timeCheckInterval);
+                loadFileOrder();
+                var duration = parseInt(settings.duration);
+                timer = setInterval(showNextImage, duration);
+            }
+        }
+
+        function showNextImage() {
+          if (currentIndex >= imageUrls.length) {
+                // Reached the end of the cycle, check for updates
+                checkForUpdates(currentSettings);
+                currentIndex = 0; // Start from the beginning after reaching the end
+            }
+
+            var imageUrl = 'content/' + imageUrls[currentIndex];
+            var img = new Image();
+            img.src = imageUrl;
+            img.onload = function () {
+                // Display the image in the slideshow container
+                var slideshowContainer = document.getElementById('slideshow-container');
+                slideshowContainer.innerHTML = ''; // Clear previous images
+                slideshowContainer.appendChild(img);
+            };
+
+            currentIndex++;
+        }
+
+        function checkForUpdates(settings) { // Receive the current settings as an argument
+        // Check for updates in the image order (file_order.txt)
+        fetch('file_order.txt')
+            .then(response => response.text())
+            .then(data => {
+                var newImageUrls = parseFileOrder(data);
+                var imageOrderChanged = !arraysEqual(imageUrls, newImageUrls);
+
+                // Check for updates in the settings (settings.txt)
+                fetch('settings.txt')
+                    .then(response => response.text())
+                    .then(settingsData => {
+                        var newSettings = parseSettings(settingsData);
+                        var settingsChanged = !objectsEqual(settings, newSettings);
+
+                        if (imageOrderChanged || settingsChanged) {
+                            // If the image order or settings have changed, restart the slideshow with the new data
+                            clearInterval(timer);
+                            clearInterval(timeCheckInterval);
+                            imageUrls = newImageUrls;
+                            currentSettings = newSettings; // Update the current settings
+                            startSlideshow(currentSettings);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fehler beim Laden der Einstellungen: ', error);
+                    });
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Dateireihenfolge: ', error);
+            });
+        }
+
+        // Helper function to compare two arrays
+        function arraysEqual(arr1, arr2) {
+            return JSON.stringify(arr1) === JSON.stringify(arr2);
+        }
+
+        // Helper function to compare two objects
+        function objectsEqual(obj1, obj2) {
+            return JSON.stringify(obj1) === JSON.stringify(obj2);
+        }
+
+        // Start the slideshow when the page loads
+        loadSettings();
+    </script>
 </body>
 </html>

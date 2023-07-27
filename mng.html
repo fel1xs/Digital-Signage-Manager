@@ -29,51 +29,91 @@
         <input type="file" name="file" id="file-input">
         <button type="submit">Hochladen</button>
     </form>
+    <h2>Einstellungen:</h2>
+    <form id="settings-form">
+        <label for="duration">Anzeigedauer (in ms):</label>
+        <input type="number" id="duration" name="duration">
+        <br>
+        <label for="start-time">Startzeit (HH:mm):</label>
+        <input type="time" id="start-time" name="start-time">
+        <br>
+        <label for="end-time">Endzeit (HH:mm):</label>
+        <input type="time" id="end-time" name="end-time">
+        <br>
+        <button type="submit">Speichern</button>
+    </form>
 </main>
 <script>
+    var currentSettings = {};
     function updateFileList() {
+        clearFileList();
+
         var fileList = document.getElementById('file-list');
-        fileList.innerHTML = '';
 
         // AJAX-Anfrage an den Server, um die Liste der Dateien zu erhalten
-        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Dateiliste zurückzugeben
-        // Beispiel: 'get_file_list.php'
-        // Der Server sollte eine JSON- oder Textantwort mit den Dateinamen im "content"-Ordner zurückgeben
-        // Beispielantwort: ['datei1.png', 'datei2.jpg', 'datei3.txt']
         fetch('get_file_list.php')
             .then(response => response.json())
             .then(data => {
-                data.sort(); // Alphabetisch sortieren
+                // Fetch the file order from file_order.txt
+                fetch('file_order.txt')
+                    .then(response => response.text())
+                    .then(orderData => {
+                        const order = orderData.trim().split('\n');
+                        // Sort the filenames based on the order
+                        data.sort((a, b) => {
+                            return order.indexOf(a) - order.indexOf(b);
+                        });
 
-                data.forEach(filename => {
-                    var container = document.createElement('div');
-                    var img = document.createElement('img');
-                    container.className = 'file-container';
-                    img.src = 'content/' + filename;
-                    img.alt = filename;
-                    img.className = 'preview';
-                    container.appendChild(img);
+                        data.forEach(filename => {
+                            var container = document.createElement('div'); // Define container within the loop
+                            var img = document.createElement('img');
+                            container.className = 'file-container';
+                            img.src = 'content/' + filename;
+                            img.alt = filename;
+                            img.className = 'preview';
+                            container.appendChild(img);
 
-                    var label = document.createElement('p');
-                    label.textContent = filename;
-                    label.className = 'label';
-                    container.appendChild(label);
+                            var label = document.createElement('p');
+                            label.textContent = filename;
+                            label.className = 'label';
+                            container.appendChild(label);
 
-                    var deleteIcon = document.createElement('i');
-                    deleteIcon.className = 'fas fa-trash-alt delete-icon';
-                    deleteIcon.addEventListener('click', function () {
-                        if (window.confirm('Möchten Sie die Datei "' + filename + '" wirklich löschen?')) {
-                            deleteFile(filename);
-                        }
+                            var deleteIcon = document.createElement('i');
+                            deleteIcon.className = 'fas fa-trash-alt delete-icon';
+                            deleteIcon.addEventListener('click', function () {
+                                if (window.confirm('Möchten Sie die Datei "' + filename + '" wirklich löschen?')) {
+                                    deleteFile(filename);
+                                }
+                            });
+                            container.appendChild(deleteIcon);
+
+                            container.dataset.filename = filename;
+
+                            fileList.appendChild(container);
+                        });
                     });
-                    container.appendChild(deleteIcon);
-
-                    fileList.appendChild(container);
-                });
             })
             .catch(error => {
                 console.error('Fehler beim Abrufen der Dateiliste: ', error);
             });
+    }
+
+    function clearFileList() {
+        var fileList = document.getElementById('file-list');
+        while (fileList.firstChild) {
+            fileList.removeChild(fileList.firstChild);
+        }
+    }
+
+    function getFilenameList() {
+        var fileList = document.getElementById('file-list');
+        var fileContainers = fileList.getElementsByClassName('file-container');
+        var filenames = [];
+        for (var i = 0; i < fileContainers.length; i++) {
+            var filename = fileContainers[i].dataset.filename;
+            filenames.push(filename);
+        }
+        return filenames;
     }
 
     function deleteFile(filename) {
@@ -85,7 +125,7 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({filename: filename})
+            body: JSON.stringify({ filename: filename })
         })
             .then(response => response.json())
             .then(data => {
@@ -120,8 +160,73 @@
             });
     });
 
+    function loadSettings() {
+        fetch('settings.txt')
+            .then(response => response.text())
+            .then(data => {
+                var settings = parseSettings(data);
+                populateSettingsForm(settings); // Update the settings form with fetched data
+                currentSettings = settings; // Store the current settings
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Einstellungen: ', error);
+            });
+    }
+
+    function populateSettingsForm(settings) {
+        document.getElementById('duration').value = settings.duration;
+        document.getElementById('start-time').value = settings.start_time;
+        document.getElementById('end-time').value = settings.end_time;
+    }
+
+    function updateSettings(settings) {
+        fetch('update_settings.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Fehler beim Aktualisieren der Einstellungen: ', error);
+            });
+    }
+    
+    function parseSettings(data) {
+        var settings = {};
+        var lines = data.trim().split('\n');
+        lines.forEach(line => {
+            var parts = line.split(':');
+            var key = parts[0].trim();
+            var value = parts.slice(1).join(':').trim(); // Rejoin the time fields in case they contain ':'
+            settings[key] = value;
+        });
+        return settings;
+    }
+
+    document.getElementById('settings-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var duration = parseInt(document.getElementById('duration').value);
+        var startTime = document.getElementById('start-time').value;
+        var endTime = document.getElementById('end-time').value;
+
+        var updatedSettings = {
+            duration: duration,
+            start_time: startTime,
+            end_time: endTime
+        };
+
+        updateSettings(updatedSettings);
+        currentSettings = updatedSettings; // Update the current settings with the new values
+    });
+
     // Beim Laden der Seite die Dateiliste aktualisieren
     updateFileList();
+    loadSettings();
 </script>
 </body>
 </html>
