@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <title>File Management</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
+    <script src="https://kit.fontawesome.com/91b23fae0d.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <header>
@@ -18,8 +19,11 @@
 </header>
 <main>
     <h1>Dateien für Digital Signage Screens verwalten</h1>
-
+    <div>
     <h2>Aktuelle Dateien:</h2>
+    <button onclick="galleryView()"><i class="fa-solid fa-grip"></i></button>
+    <button onclick="listView()"><i class="fa-solid fa-ellipsis"></i></button>
+    </div>
     <div id="file-list">
         <!-- Die Liste der Dateien wird hier als Bilder mit Beschriftung und Löschen-Icon angezeigt -->
     </div>
@@ -45,6 +49,14 @@
 </main>
 <script>
     var currentSettings = {};
+
+    function galleryView() {
+        document.getElementById('file-list').style.flexWrap = 'wrap';
+    }
+    function listView() {
+        document.getElementById('file-list').style.flexWrap = 'nowrap';
+    }
+
     function updateFileList() {
         clearFileList();
 
@@ -78,6 +90,16 @@
                             label.className = 'label';
                             container.appendChild(label);
 
+
+                            var editcontainer = document.createElement('div');
+
+                            var leftArrowIcon = document.createElement('i');
+                            leftArrowIcon.className = 'fas fa-arrow-left arrow-icon';
+                            leftArrowIcon.addEventListener('click', function () {
+                                moveFile(filename, 'up');
+                            });
+                            editcontainer.appendChild(leftArrowIcon);
+
                             var deleteIcon = document.createElement('i');
                             deleteIcon.className = 'fas fa-trash-alt delete-icon';
                             deleteIcon.addEventListener('click', function () {
@@ -85,7 +107,16 @@
                                     deleteFile(filename);
                                 }
                             });
-                            container.appendChild(deleteIcon);
+                            editcontainer.appendChild(deleteIcon);
+
+                            var rightArrowIcon = document.createElement('i');
+                            rightArrowIcon.className = 'fas fa-arrow-right arrow-icon';
+                            rightArrowIcon.addEventListener('click', function () {
+                                moveFile(filename, 'down');
+                            });
+                            editcontainer.appendChild(rightArrowIcon);
+
+                            container.appendChild(editcontainer);
 
                             container.dataset.filename = filename;
 
@@ -114,6 +145,85 @@
             filenames.push(filename);
         }
         return filenames;
+    }
+
+    function moveFile(filename, direction) {
+    var fileList = document.getElementById('file-list');
+    var fileContainers = fileList.getElementsByClassName('file-container');
+    var currentIndex = -1;
+
+    // Find the current index of the file in the file list
+    for (var i = 0; i < fileContainers.length; i++) {
+        if (fileContainers[i].dataset.filename === filename) {
+            currentIndex = i;
+            break;
+        }
+    }
+
+    if (currentIndex >= 0) {
+        var newIndex;
+        if (direction === 'up') {
+            newIndex = currentIndex - 1;
+        } else if (direction === 'down') {
+            newIndex = currentIndex + 1;
+        } else {
+            return; // Invalid direction, do nothing
+        }
+
+        if (newIndex >= 0 && newIndex < fileContainers.length) {
+            // Swap the file containers in the DOM
+            var currentContainer = fileContainers[currentIndex];
+            var newContainer = fileContainers[newIndex];
+            if (direction === 'up') {
+                fileList.insertBefore(currentContainer, newContainer); // Move the current container up
+            } else {
+                fileList.insertBefore(newContainer, currentContainer); // Move the current container down
+            }
+
+            // Update the file order in the 'file_order.txt' file
+            var filenames = getFilenameList(); // Get the updated file order from the DOM
+            var filenameOrderData = JSON.stringify({ order: filenames });
+
+            // Update the file order on the server
+            fetch('update_file_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: filenameOrderData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Fehler beim Aktualisieren der Dateireihenfolge: ', error);
+            });
+        }
+    }
+    }
+
+
+
+    function updateFileOrder(newOrder) {
+    // AJAX-Anfrage an den Server, um die Dateireihenfolge zu aktualisieren
+    // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Dateireihenfolge zu speichern
+    // Beispiel: 'update_file_order.php'
+    fetch('update_file_order.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ order: newOrder })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            updateFileList(); // Update the file list after reordering
+        })
+        .catch(error => {
+            console.error('Fehler beim Aktualisieren der Dateireihenfolge: ', error);
+        });
     }
 
     function deleteFile(filename) {

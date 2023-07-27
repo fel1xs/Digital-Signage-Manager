@@ -1,7 +1,6 @@
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden;
   font-family: sans-serif;
   background-color: #ffffff;
   color: #003260;
@@ -70,11 +69,11 @@ button {
 }
 #file-list {
   display: flex;
-  flex-wrap: wrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
+  flex-wrap: nowrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
   border-style: solid;
   border-radius: 10px;
   padding: 20px;
-  width: 100%; /* Ändert die Breite auf 100%, um die gesamte Breite des Containers zu nutzen */
+  /* Ändert die Breite auf 100%, um die gesamte Breite des Containers zu nutzen */
   background-color: #003260;
   overflow-x: auto; /* Zeigt einen horizontalen Scrollbalken, wenn der Inhalt zu breit wird */
 }
@@ -97,6 +96,12 @@ button {
   color: rgba(255, 0, 0, 0.616);
   cursor: pointer;
 }
+
+.arrow-icon {
+  cursor: pointer;
+  margin: 0 5px;
+}
+
 .label {
   margin: 0px;
   text-align: center;
