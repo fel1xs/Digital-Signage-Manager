@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Player by Felix Salzer for tabbs vital GmbH 2023 -->
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="300"> <!-- Aktualisiere die Seite alle 5 Minuten -->
+  <title>TABBS Digital Signage Player</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="images">
+    <!-- Die Bilder werden hier angezeigt -->
+  </div>
+
+  <script>
+    var currentIndex = 0;
+    var images = [];
+    var imageDiv = document.getElementById('images');
+
+    function hideAllImages() {
+      images.forEach(function(image) {
+        image.style.display = 'none';
+      });
+    }
+
+    function showNextImage() {
+      hideAllImages();
+      currentIndex = (currentIndex + 1) % images.length;
+      images[currentIndex].style.display = 'block';
+      setTimeout(showNextImage, 20000);
+    }
+
+    function loadImages() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            images = [];
+            var fileList = xhr.responseText.split('\n').filter(Boolean);
+            fileList.forEach(function(filename) {
+              var img = new Image();
+              img.src = filename;
+              images.push(img);
+              imageDiv.appendChild(img);
+            });
+            currentIndex = -1; // Setze den Index auf -1, damit das nächste Bild beim Start sofort angezeigt wird
+            showNextImage();
+          } else {
+            console.error('Failed to load images.');
+          }
+        }
+      };
+      xhr.open('GET', 'get_images.php', true); // Ersetzen Sie 'get_images.php' durch den tatsächlichen Dateinamen
+      xhr.send();
+    }
+
+    window.onload = function() {
+      loadImages();
+    };
+  </script>
+</body>
+</html>

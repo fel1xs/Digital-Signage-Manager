@@ -1,0 +1,94 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  background-color: #ffffff;
+  color: #003260;
+}
+
+#logo {
+  width: 150px;
+}
+nav {
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+nav a {
+  float: left;
+  color: #003260;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+nav a:hover {
+  background-color: #74F2FB;
+}
+nav a:first-child:hover {
+  background-color: #ffffff;
+}
+
+/* Add a color to the active/current link */
+nav a.active {
+  background-color: #07CAD8;
+  color: white;
+}
+
+button {
+  background-color: #07CAD8;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+}
+
+#images {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.error-message {
+  color: red;
+  font-size: 18px;
+}
+#file-list {
+  display: flex;
+  flex-wrap: wrap;
+  border-style: solid;
+  border-radius: 10px;
+  padding: 20px;
+  width: fit-content;
+  background-color: #003260;
+  color: #ffffff;
+}
+.preview {
+  width: 300px;
+  height: auto;
+  margin: 5px;
+  box-shadow: 0 0 15px 0 rgba(255, 255, 255, 0.9);
+}
+.label {
+  margin: 0px;
+  text-align: center;
+}
+
+main {
+  margin: 50px;
+}
