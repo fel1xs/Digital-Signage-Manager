@@ -27,25 +27,37 @@
     <div id="file-list">
         <!-- The list of files as images with labels and delete icon -->
     </div>
-
-    <h2>Neue Datei hochladen:</h2>
-    <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" name="file" id="file-input">
-        <button type="submit">Hochladen</button>
-    </form>
-    <h2>Einstellungen:</h2>
-    <form id="settings-form">
-        <label for="duration">Anzeigedauer (in ms):</label>
-        <input type="number" id="duration" name="duration">
-        <br>
-        <label for="start-time">Startzeit (HH:mm):</label>
-        <input type="time" id="start-time" name="start-time">
-        <br>
-        <label for="end-time">Endzeit (HH:mm):</label>
-        <input type="time" id="end-time" name="end-time">
-        <br>
-        <button type="submit">Speichern</button>
-    </form>
+    <div id="config">
+        <section>
+            <h2>Neue Datei hochladen:</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="file" id="file-input">
+                <button type="submit">Hochladen</button>
+            </form>
+        </section>
+        <section>
+            <h2>Einstellungen:</h2>
+            <form id="settings-form">
+                <label for="duration">Anzeigedauer (in ms):</label>
+                <input type="number" id="duration" name="duration">
+                <br>
+                <label for="start-time">Startzeit (HH:mm):</label>
+                <input type="time" id="start-time" name="start-time">
+                <br>
+                <label for="end-time">Endzeit (HH:mm):</label>
+                <input type="time" id="end-time" name="end-time">
+                <br>
+                <button type="submit">Speichern</button>
+            </form>
+        </section>
+        <section>
+            <h2>Bildschirme:</h2>
+            <button onclick="updateBildschirme()"><i class="fa-solid fa-arrow-rotate-right"></i></button>
+            <div id="bildschirme">
+                <!-- The "Bildschirme" section to be populated dynamically -->
+            </div>
+        </section>
+    </div>
 </main>
 <script>
     var currentSettings = {};
@@ -330,8 +342,58 @@
         currentSettings = updatedSettings; // Update the current settings with the new values
     });
 
+    function loadBildschirme() {
+        var bildschirmeDiv = document.getElementById('bildschirme');
+
+        // AJAX request to fetch the data from log.txt
+        fetch('log.txt')
+            .then(response => response.text())
+            .then(data => {
+                var lines = data.trim().split('\n');
+                for (var i = 0; i < lines.length; i += 3) {
+                    var name = lines[i].slice(0, -1); // Remove the ":" at the end of the name
+                    var ip = lines[i + 1].split(': ')[1];
+                    var lastOnline = lines[i + 2].split(': ')[1];
+
+                    // Create a new div for each "Bildschirme" entry
+                    var entryDiv = document.createElement('div');
+                    entryDiv.className = 'bildschirm-entry';
+
+                    var nameParagraph = document.createElement('p');
+                    nameParagraph.textContent = 'Name: ' + name;
+                    entryDiv.appendChild(nameParagraph);
+
+                    var ipParagraph = document.createElement('p');
+                    ipParagraph.textContent = 'IP: ' + ip;
+                    entryDiv.appendChild(ipParagraph);
+
+                    var lastOnlineParagraph = document.createElement('p');
+                    lastOnlineParagraph.textContent = 'Last Online: ' + lastOnline;
+                    entryDiv.appendChild(lastOnlineParagraph);
+
+                    bildschirmeDiv.appendChild(entryDiv);
+                }
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Bildschirme: ', error);
+            });
+    }
+
+    function updateBildschirme() {
+        var bildschirmeDiv = document.getElementById('bildschirme');
+        // Clear existing content in the "Bildschirme" section
+        while (bildschirmeDiv.firstChild) {
+            bildschirmeDiv.removeChild(bildschirmeDiv.firstChild);
+        }
+        // Load updated content in the "Bildschirme" section
+        loadBildschirme();
+    }
+
+    // Load the "Bildschirme" section when the page loads
+    loadBildschirme();
     // Refresh the file list when loading the page
     updateFileList();
+    // Load the settings when the page loads
     loadSettings();
 </script>
 </body>

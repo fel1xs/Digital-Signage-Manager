@@ -8,8 +8,8 @@
             height: 100%;
             margin: 0;
             overflow: hidden;
+            background-color: #000;
         }
-
         #slideshow-container {
             width: 100%;
             height: 100%;
@@ -18,7 +18,6 @@
             align-items: center;
             background-color: #000; /* Optional: Set a background color in case the image aspect ratio doesn't match the screen */
         }
-
         #slideshow-container img {
             width: 100%;
             height: 100%;
@@ -27,7 +26,7 @@
     </style>
 </head>
 <body>
-    <div id="slideshow-container">
+    <div id="slideshow-container" class="slideshow-hidden">
         <!-- Images will be displayed here -->
     </div>
 
@@ -36,137 +35,172 @@
         var currentIndex = 0;
         var timer;
         var timeCheckInterval;
+        var checkTimeWindowInterval
         var currentSettings = null;
 
-        function loadSettings() {
-            fetch('settings.txt')
-                .then(response => response.text())
-                .then(data => {
-                    var settings = parseSettings(data);
-                    currentSettings = settings; // Store the current settings
-                    startSlideshow(settings);
-                })
-                .catch(error => {
-                    console.error('Fehler beim Laden der Einstellungen: ', error);
-                });
+        // Helper function to fetch data and handle errors
+        async function fetchData(url) {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return await response.text();
+          } catch (error) {
+            console.error('Error occurred while fetching data:', error);
+            throw error;
+          }
+        }
+
+        // Load settings and file order together to avoid redundant code
+        async function loadData() {
+          try {
+            const settingsData = await fetchData('settings.txt');
+            currentSettings = parseSettings(settingsData);
+            startSlideshow(currentSettings);
+
+            const fileOrderData = await fetchData('file_order.txt');
+            imageUrls = parseFileOrder(fileOrderData);
+            if (imageUrls.length > 0) {
+              //showNextImage();
+            }
+          } catch (error) {
+            console.error('Error occurred while loading data:', error);
+          }
         }
 
         function parseSettings(data) {
-        var settings = {};
-        var lines = data.trim().split('\n');
-        lines.forEach(line => {
+          var settings = {};
+          var lines = data.trim().split('\n');
+          lines.forEach(line => {
             var parts = line.split(':');
             var key = parts[0].trim();
-            var value = parts.slice(1).join(':').trim(); // Rejoin the time fields in case they contain ':'
+            var value = parts.slice(1).join(':').trim();
             settings[key] = value;
-        });
-        return settings;
-        }
-
-        function loadFileOrder() {
-          // Load the file order from file_order.txt
-            fetch('file_order.txt')
-                .then(response => response.text())
-                .then(data => {
-                    imageUrls = parseFileOrder(data);
-                    if (imageUrls.length > 0) {
-                        showNextImage();
-                    }
-                })
-                .catch(error => {
-                    console.error('Fehler beim Laden der Dateireihenfolge: ', error);
-                });
+          });
+          return settings;
         }
 
         function parseFileOrder(data) {
-            var lines = data.trim().split('\n');
-            return lines;
+          var lines = data.trim().split('\n');
+          return lines;
         }
 
         function startSlideshow(settings) {
-            var startHour = parseInt(settings.start_time.split(':')[0]);
-            var endHour = parseInt(settings.end_time.split(':')[0]);
-            var currentHour = new Date().getHours();
+          // Check if the current time is within the specified time window
+          var startHour = parseInt(currentSettings.start_time.split(':')[0]);
+          var startMinute = parseInt(currentSettings.start_time.split(':')[1]);
+          var endHour = parseInt(currentSettings.end_time.split(':')[0]);
+          var endMinute = parseInt(currentSettings.end_time.split(':')[1]);
+          
+          var now = new Date();
+          var currentHour = now.getHours();
+          var currentMinute = now.getMinutes();
 
-            if (currentHour >= startHour && currentHour < endHour) {
-                loadFileOrder();
-                var duration = parseInt(settings.duration);
-                timer = setInterval(showNextImage, duration);
-            } else {
-                // Outside the specified time window, check every minute if time window changed
-                timeCheckInterval = setInterval(function () {
-                    loadSettings();
-                    checkTimeWindow(settings);
-                }, 60000);
-            }
+          if (
+            (currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) &&
+            (currentHour < endHour || (currentHour === endHour && currentMinute < endMinute))
+          ) {
+            // Inside the specified time window, load the file order and start the slideshow
+            //loadFileOrder();
+            var duration = parseInt(settings.duration);
+            timer = setInterval(showNextImage, duration);
+
+          } else {
+            // Outside the specified time window, check every minute if time window changed
+            timeCheckInterval = setInterval(checkForUpdates, 60000);
+            checkTimeWindow(); //go into standby
+            checkTimeWindowInterval = setInterval(checkTimeWindow, 60000);
+          }
         }
 
-        function checkTimeWindow(settings) {
+        function checkTimeWindow() {
           // Check if the current time is within the specified time window
-            var startHour = parseInt(settings.start_time.split(':')[0]);
-            var endHour = parseInt(settings.end_time.split(':')[0]);
-            var currentHour = new Date().getHours();
+          var startHour = parseInt(currentSettings.start_time.split(':')[0]);
+          var startMinute = parseInt(currentSettings.start_time.split(':')[1]);
+          var endHour = parseInt(currentSettings.end_time.split(':')[0]);
+          var endMinute = parseInt(currentSettings.end_time.split(':')[1]);
+          
+          var now = new Date();
+          var currentHour = now.getHours();
+          var currentMinute = now.getMinutes();
 
-            if (currentHour >= startHour && currentHour < endHour) {
-                clearInterval(timeCheckInterval);
-                loadFileOrder();
-                var duration = parseInt(settings.duration);
-                timer = setInterval(showNextImage, duration);
-            }
+          if (
+            (currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) &&
+            (currentHour < endHour || (currentHour === endHour && currentMinute < endMinute))
+          ) {
+              clearInterval(timeCheckInterval);
+              clearInterval(checkTimeWindowInterval);
+              loadData();
+          } else {
+              // Outside the specified time window, hide the slideshow container
+              var slideshowContainer = document.getElementById('slideshow-container');
+              slideshowContainer.style.display = 'none';
+          }
         }
 
         function showNextImage() {
           if (currentIndex >= imageUrls.length) {
-                // Reached the end of the cycle, check for updates
-                checkForUpdates(currentSettings);
-                logPlayerInfo("Eingang"); // Log the player information
-                currentIndex = 0; // Start from the beginning after reaching the end
+            // Reached the end of the cycle, check for updates
+            checkForUpdates();
+            logPlayerInfo("Eingang"); // Log the player information
+            var startHour = parseInt(currentSettings.start_time.split(':')[0]);
+            var startMinute = parseInt(currentSettings.start_time.split(':')[1]);
+            var endHour = parseInt(currentSettings.end_time.split(':')[0]);
+            var endMinute = parseInt(currentSettings.end_time.split(':')[1]);
+            
+            var now = new Date();
+            var currentHour = now.getHours();
+            var currentMinute = now.getMinutes();
+
+            if (
+              (currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) &&
+              (currentHour < endHour || (currentHour === endHour && currentMinute < endMinute))
+            ) {
+              currentIndex = 0; // Start from the beginning after reaching the end
+            } else {
+              currentIndex = 0; 
+              clearInterval(timer);
+              loadData(); //will evaluate timewindow again and go into standby
             }
+          }
 
-            var imageUrl = 'content/' + imageUrls[currentIndex];
-            var img = new Image();
-            img.src = imageUrl;
-            img.onload = function () {
-                // Display the image in the slideshow container
-                var slideshowContainer = document.getElementById('slideshow-container');
-                slideshowContainer.innerHTML = ''; // Clear previous images
-                slideshowContainer.appendChild(img);
-            };
-
+          var imageUrl = 'content/' + imageUrls[currentIndex];
+          var img = new Image();
+          img.src = imageUrl;
+          img.onload = function () {
+            // Display the image in the slideshow container
+            var slideshowContainer = document.getElementById('slideshow-container');
+            slideshowContainer.innerHTML = ''; // Clear previous images
+            slideshowContainer.appendChild(img);
             currentIndex++;
+          };
         }
 
-        function checkForUpdates(settings) { // Receive the current settings as an argument
-        // Check for updates in the image order (file_order.txt)
-        fetch('file_order.txt')
-            .then(response => response.text())
-            .then(data => {
-                var newImageUrls = parseFileOrder(data);
-                var imageOrderChanged = !arraysEqual(imageUrls, newImageUrls);
+        async function checkForUpdates() {
+          try {
+            // Check for updates in the image order (file_order.txt)
+            const fileOrderData = await fetchData('file_order.txt');
+            var newImageUrls = parseFileOrder(fileOrderData);
+            var imageOrderChanged = !arraysEqual(imageUrls, newImageUrls);
 
-                // Check for updates in the settings (settings.txt)
-                fetch('settings.txt')
-                    .then(response => response.text())
-                    .then(settingsData => {
-                        var newSettings = parseSettings(settingsData);
-                        var settingsChanged = !objectsEqual(settings, newSettings);
+            // Check for updates in the settings (settings.txt)
+            const settingsData = await fetchData('settings.txt');
+            var newSettings = parseSettings(settingsData);
+            var settingsChanged = !objectsEqual(currentSettings, newSettings);
 
-                        if (imageOrderChanged || settingsChanged) {
-                            // If the image order or settings have changed, restart the slideshow with the new data
-                            clearInterval(timer);
-                            clearInterval(timeCheckInterval);
-                            imageUrls = newImageUrls;
-                            currentSettings = newSettings; // Update the current settings
-                            startSlideshow(currentSettings);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Fehler beim Laden der Einstellungen: ', error);
-                    });
-            })
-            .catch(error => {
-                console.error('Fehler beim Laden der Dateireihenfolge: ', error);
-            });
+            if (imageOrderChanged || settingsChanged) {
+              // If the image order or settings have changed, restart the slideshow with the new data
+              clearInterval(timer);
+              clearInterval(timeCheckInterval);
+              clearInterval(checkTimeWindowInterval);
+              imageUrls = newImageUrls;
+              currentSettings = newSettings; // Update the current settings
+              startSlideshow(currentSettings);
+            }
+          } catch (error) {
+            console.error('Error occurred while checking for updates:', error);
+          }
         }
 
         // Helper function to compare two arrays
@@ -212,7 +246,7 @@
 
 
         // Start the slideshow when the page loads
-        loadSettings();
+        loadData();
     </script>
 </body>
 </html>

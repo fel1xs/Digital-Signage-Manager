@@ -1,3 +1,9 @@
 Eingang:
 last-ip: 95.90.129.166
-last-online: 2023-07-28 13:26:56
+last-online: 2023-07-28 19:36:10
+Bistro:
+last-ip: 95.90.129.166
+last-online: 2023-07-28 16:25:07
+Sportstudio:
+last-ip: 95.90.129.166
+last-online: 2023-07-28 16:32:01

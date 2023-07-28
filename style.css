@@ -104,6 +104,47 @@ button {
   text-align: center;
 }
 
+#config {
+  display: flex;
+  flex-wrap: wrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
+}
+
+section {
+  margin: 5px;
+  width: auto;
+  border-style: solid;
+  display: flex;
+  flex-direction: column; /* Ändert die Ausrichtung auf vertikal */
+  align-items: center; /* Zentriert die Elemente horizontal */
+  justify-content: space-between;
+  padding: 10px;
+  overflow-x: auto; /* Zeigt einen horizontalen Scrollbalken, wenn der Inhalt zu breit wird */
+}
+#bildschirme {
+  display: flex;
+  text-align: center;
+}
+
+.bildschirm-entry {
+  border-style: solid;
+  margin: 5px;
+  padding: 5px;
+  box-shadow: 0 0 15px 0 #003260;
+  background-color: #003260;
+  color: white;
+  border-radius: 10px;
+}
+#config h2 {
+  display: inline-block;
+}
+button[onclick="updateBildschirme()"] {
+  margin:0;
+  font-size: 35px;
+  padding: 10px 40px;
+  width: 200px;
+  display: inline-block;
+  vertical-align:top;
+}
 main {
   margin: 50px;
 }
