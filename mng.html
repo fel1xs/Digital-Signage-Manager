@@ -11,7 +11,7 @@
 <body>
 <header>
     <nav>
-        <a><img src="tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo einfügen -->
+        <a><img src="tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo -->
         <a class="active" href="mng.html"> Digital Signage File Management</a>
         <a href="index.html" target="_blank">Player</a>
         <a href="https://tabbs.de" target="_blank">tabbs.de</a>
@@ -25,7 +25,7 @@
     <button onclick="listView()"><i class="fa-solid fa-ellipsis"></i></button>
     </div>
     <div id="file-list">
-        <!-- Die Liste der Dateien wird hier als Bilder mit Beschriftung und Löschen-Icon angezeigt -->
+        <!-- The list of files as images with labels and delete icon -->
     </div>
 
     <h2>Neue Datei hochladen:</h2>
@@ -62,7 +62,7 @@
 
         var fileList = document.getElementById('file-list');
 
-        // AJAX-Anfrage an den Server, um die Liste der Dateien zu erhalten
+        // AJAX request to the server to get the list of files
         fetch('get_file_list.php')
             .then(response => response.json())
             .then(data => {
@@ -85,13 +85,13 @@
                             img.className = 'preview';
                             container.appendChild(img);
 
-                            var label = document.createElement('p');
+                            var label = document.createElement('p');    // Define label within the loop
                             label.textContent = filename;
                             label.className = 'label';
                             container.appendChild(label);
 
 
-                            var editcontainer = document.createElement('div');
+                            var editcontainer = document.createElement('div');  // Define label and buttons within the loop
 
                             var leftArrowIcon = document.createElement('i');
                             leftArrowIcon.className = 'fas fa-arrow-left arrow-icon';
@@ -206,9 +206,7 @@
 
 
     function updateFileOrder(newOrder) {
-    // AJAX-Anfrage an den Server, um die Dateireihenfolge zu aktualisieren
-    // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Dateireihenfolge zu speichern
-    // Beispiel: 'update_file_order.php'
+    // AJAX request to the server to update the file order
     fetch('update_file_order.php', {
         method: 'POST',
         headers: {
@@ -227,9 +225,7 @@
     }
 
     function deleteFile(filename) {
-        // AJAX-Anfrage an den Server, um die Datei zu löschen
-        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei zu löschen
-        // Beispiel: 'delete_file.php'
+        // AJAX request to the server to delete the file
         fetch('delete_file.php', {
             method: 'POST',
             headers: {
@@ -253,9 +249,7 @@
         var formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
-        // AJAX-Anfrage an den Server, um die Datei hochzuladen
-        // Hier sollten Sie Ihre serverseitige Implementierung verwenden, um die Datei hochzuladen
-        // Beispiel: 'upload_file.php'
+        // AJAX request to the server to upload the file
         fetch('upload_file.php', {
             method: 'POST',
             body: formData
@@ -283,13 +277,15 @@
             });
     }
 
+    //load settings into the form
     function populateSettingsForm(settings) {
         document.getElementById('duration').value = settings.duration;
         document.getElementById('start-time').value = settings.start_time;
         document.getElementById('end-time').value = settings.end_time;
     }
 
-    function updateSettings(settings) {
+    function updateSettings(settings) { 
+        // AJAX request to the server to update the settings
         fetch('update_settings.php', {
             method: 'POST',
             headers: {
@@ -334,7 +330,7 @@
         currentSettings = updatedSettings; // Update the current settings with the new values
     });
 
-    // Beim Laden der Seite die Dateiliste aktualisieren
+    // Refresh the file list when loading the page
     updateFileList();
     loadSettings();
 </script>

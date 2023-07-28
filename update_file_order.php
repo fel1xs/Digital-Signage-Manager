@@ -7,10 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderFile = 'file_order.txt';
     file_put_contents($orderFile, implode("\n", $newOrder));
 
-    // Erfolgreich aktualisiert
+    // Successfully updated
     echo json_encode(array('status' => 'success', 'message' => 'Dateireihenfolge erfolgreich aktualisiert.'));
 } else {
-    // Ungültige Anfrage
+    // Invalid request
     echo json_encode(array('status' => 'error', 'message' => 'Ungültige Anfrage.'));
 }
 ?>

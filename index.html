@@ -64,6 +64,7 @@
         }
 
         function loadFileOrder() {
+          // Load the file order from file_order.txt
             fetch('file_order.txt')
                 .then(response => response.text())
                 .then(data => {
@@ -96,11 +97,12 @@
                 timeCheckInterval = setInterval(function () {
                     loadSettings();
                     checkTimeWindow(settings);
-                }, 60000); // Check every minute
+                }, 60000);
             }
         }
 
         function checkTimeWindow(settings) {
+          // Check if the current time is within the specified time window
             var startHour = parseInt(settings.start_time.split(':')[0]);
             var endHour = parseInt(settings.end_time.split(':')[0]);
             var currentHour = new Date().getHours();
@@ -117,6 +119,7 @@
           if (currentIndex >= imageUrls.length) {
                 // Reached the end of the cycle, check for updates
                 checkForUpdates(currentSettings);
+                logPlayerInfo("Eingang"); // Log the player information
                 currentIndex = 0; // Start from the beginning after reaching the end
             }
 
@@ -175,6 +178,38 @@
         function objectsEqual(obj1, obj2) {
             return JSON.stringify(obj1) === JSON.stringify(obj2);
         }
+
+        // Log the player information in log.txt
+        function logPlayerInfo(name) {
+            // Get player IP address
+            fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip;
+                    // AJAX request to log_info.php to log the name, IP address, and timestamp
+                    fetch('log_info.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: name, ipAddress: ipAddress })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('Player information logged successfully.');
+                        } else {
+                            console.error('Failed to log player information.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error occurred while logging player information:', error);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error occurred while retrieving player IP address:', error);
+                });
+        }
+
 
         // Start the slideshow when the page loads
         loadSettings();

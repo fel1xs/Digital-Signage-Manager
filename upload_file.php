@@ -1,5 +1,5 @@
 <?php
-// Verzeichnispfad zum "content"-Ordner
+// Directory path to the "content" folder
 $contentDirectory = 'content/';
 
 if (isset($_FILES['file'])) {
@@ -7,13 +7,11 @@ if (isset($_FILES['file'])) {
     $filename = basename($file['name']);
     $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-    // Überprüfe, ob die Datei eine gültige Bilddatei ist (z. B. mit Endungen .png, .jpg, .jpeg, etc.)
+    // Check if the file is a valid image file (e.g. with extensions .png, .jpg, .jpeg, etc.)
     $imageExtensions = array('png', 'jpg', 'jpeg', 'gif');
     if (in_array($extension, $imageExtensions)) {
-        // Verschiebe die hochgeladene Datei in den "content"-Ordner
+        // Move the uploaded file to the "content" folder
         if (move_uploaded_file($file['tmp_name'], $contentDirectory . $filename)) {
-            // Erfolgreich hochgeladen
-
             // Update file_order.txt with the new filename at the end of the order
             $fileOrder = file_get_contents('file_order.txt');
             $fileOrder .= "\n" . $filename;
@@ -21,15 +19,15 @@ if (isset($_FILES['file'])) {
 
             echo json_encode(array('status' => 'success', 'message' => 'Datei erfolgreich hochgeladen.'));
         } else {
-            // Fehler beim Hochladen
+            // Upload error
             echo json_encode(array('status' => 'error', 'message' => 'Fehler beim Hochladen der Datei.'));
         }
     } else {
-        // Ungültiges Dateiformat
+        // Invalid file format
         echo json_encode(array('status' => 'error', 'message' => 'Ungültiges Dateiformat. Erlaubte Formate: ' . implode(', ', $imageExtensions)));
     }
 } else {
-    // Keine Datei gefunden
+    // No file found
     echo json_encode(array('status' => 'error', 'message' => 'Keine Datei gefunden.'));
 }
 ?>

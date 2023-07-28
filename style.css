@@ -14,7 +14,6 @@ nav {
   overflow: hidden;
 }
 
-/* Style the links inside the navigation bar */
 nav a {
   float: left;
   color: #003260;
@@ -24,7 +23,6 @@ nav a {
   font-size: 17px;
 }
 
-/* Change the color of links on hover */
 nav a:hover {
   background-color: #74F2FB;
 }
@@ -32,7 +30,6 @@ nav a:first-child:hover {
   background-color: #ffffff;
 }
 
-/* Add a color to the active/current link */
 nav a.active {
   background-color: #07CAD8;
   color: white;
