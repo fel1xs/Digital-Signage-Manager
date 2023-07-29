@@ -7,7 +7,7 @@ Purpose:
 
 Contains:
 - Player (index.html)
-- Manager (mng.html)
+- Manager (/manage/index.html)
 
 Features:
 - adding, removing, moving pictures to display

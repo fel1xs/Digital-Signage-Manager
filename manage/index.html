@@ -11,9 +11,9 @@
 <body>
 <header>
     <nav>
-        <a><img src="tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo -->
+        <a><img src="../tabbs_Tabbs Hauptlogo.png" alt="Tabbs Logo" id="logo"></a> <!-- Logo -->
         <a class="active" href="mng.html"> Digital Signage File Management</a>
-        <a href="index.html" target="_blank">Player</a>
+        <a href="../index.html" target="_blank">Player</a>
         <a href="https://tabbs.de" target="_blank">tabbs.de</a>
     </nav>
 </header>
@@ -75,11 +75,11 @@
         var fileList = document.getElementById('file-list');
 
         // AJAX request to the server to get the list of files
-        fetch('get_file_list.php')
+        fetch('../get_file_list.php')
             .then(response => response.json())
             .then(data => {
                 // Fetch the file order from file_order.txt
-                fetch('file_order.txt')
+                fetch('../file_order.txt')
                     .then(response => response.text())
                     .then(orderData => {
                         const order = orderData.trim().split('\n');
@@ -92,7 +92,7 @@
                             var container = document.createElement('div'); // Define container within the loop
                             var img = document.createElement('img');
                             container.className = 'file-container';
-                            img.src = 'content/' + filename;
+                            img.src = '../content/' + filename;
                             img.alt = filename;
                             img.className = 'preview';
                             container.appendChild(img);
@@ -197,7 +197,7 @@
             var filenameOrderData = JSON.stringify({ order: filenames });
 
             // Update the file order on the server
-            fetch('update_file_order.php', {
+            fetch('../update_file_order.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -219,7 +219,7 @@
 
     function updateFileOrder(newOrder) {
     // AJAX request to the server to update the file order
-    fetch('update_file_order.php', {
+    fetch('../update_file_order.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -238,7 +238,7 @@
 
     function deleteFile(filename) {
         // AJAX request to the server to delete the file
-        fetch('delete_file.php', {
+        fetch('../delete_file.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -262,7 +262,7 @@
         formData.append('file', fileInput.files[0]);
 
         // AJAX request to the server to upload the file
-        fetch('upload_file.php', {
+        fetch('../upload_file.php', {
             method: 'POST',
             body: formData
         })
@@ -277,7 +277,7 @@
     });
 
     function loadSettings() {
-        fetch('settings.txt')
+        fetch('../settings.txt')
             .then(response => response.text())
             .then(data => {
                 var settings = parseSettings(data);
@@ -298,7 +298,7 @@
 
     function updateSettings(settings) { 
         // AJAX request to the server to update the settings
-        fetch('update_settings.php', {
+        fetch('../update_settings.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -346,7 +346,7 @@
         var bildschirmeDiv = document.getElementById('bildschirme');
 
         // AJAX request to fetch the data from log.txt
-        fetch('log.txt')
+        fetch('../log.txt')
             .then(response => response.text())
             .then(data => {
                 var lines = data.trim().split('\n');
