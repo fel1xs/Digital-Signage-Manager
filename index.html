@@ -37,6 +37,7 @@
         var timeCheckInterval;
         var checkTimeWindowInterval
         var currentSettings = null;
+        var playerName = "Eingang";
 
         // Helper function to fetch data and handle errors
         async function fetchData(url) {
@@ -64,6 +65,7 @@
             if (imageUrls.length > 0) {
               //showNextImage();
             }
+            logPlayerInfo(playerName);
           } catch (error) {
             console.error('Error occurred while loading data:', error);
           }
@@ -143,7 +145,6 @@
           if (currentIndex >= imageUrls.length) {
             // Reached the end of the cycle, check for updates
             checkForUpdates();
-            logPlayerInfo("Eingang"); // Log the player information
             var startHour = parseInt(currentSettings.start_time.split(':')[0]);
             var startMinute = parseInt(currentSettings.start_time.split(':')[1]);
             var endHour = parseInt(currentSettings.end_time.split(':')[0]);
@@ -184,6 +185,7 @@
             var newImageUrls = parseFileOrder(fileOrderData);
             var imageOrderChanged = !arraysEqual(imageUrls, newImageUrls);
 
+            logPlayerInfo(playerName); //log player info after each cycle or every minute
             // Check for updates in the settings (settings.txt)
             const settingsData = await fetchData('settings.txt');
             var newSettings = parseSettings(settingsData);
