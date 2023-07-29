@@ -44,6 +44,18 @@ button {
   cursor: pointer;
 }
 
+.ul {
+  background-color: #07cad83d;
+  border-style: dashed;
+  border-color: #07CAD8;
+  border-width: 2px;
+  color: #003260;
+  padding: 12px;
+  margin: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+
 #images {
   display: flex;
   position: absolute;
@@ -66,7 +78,7 @@ button {
 }
 #file-list {
   display: flex;
-  flex-wrap: nowrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
+  flex-wrap: wrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
   border-style: solid;
   border-radius: 10px;
   padding: 20px;
@@ -104,6 +116,12 @@ button {
   text-align: center;
 }
 
+
+#file-input {
+  padding: auto;
+  text-align: center;
+}
+
 #config {
   display: flex;
   flex-wrap: wrap; /* Setzt die Flexbox-Eigenschaft, um die Elemente in einer Reihe zu behalten */
@@ -129,6 +147,7 @@ section {
   border-style: solid;
   margin: 5px;
   padding: 5px;
+  width: 250px;
   box-shadow: 0 0 15px 0 #003260;
   background-color: #003260;
   color: white;
@@ -139,9 +158,8 @@ section {
 }
 button[onclick="updateBildschirme()"] {
   margin:0;
-  font-size: 35px;
-  padding: 10px 40px;
-  width: 200px;
+  font-size: 15px;
+  padding: 10px;
   display: inline-block;
   vertical-align:top;
 }
