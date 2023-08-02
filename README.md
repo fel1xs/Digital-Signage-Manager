@@ -1,19 +1,19 @@
-# Marketing-Control-Room
+# Digital-Signage-Manager
 
 by Felix Salzer
 
-Purpose:
+## Purpose:
 - Manage Screen(s) displaying your content for digital singage
 
-Contains:
+## Contains:
 - Player (index.html)
 - Manager (/manage/index.html)
 
-Features:
+## Features:
 - adding, removing, moving pictures to display
 - setting, changing display duration
 - setting, changing start and end times for playback
 - displaying status information on Players
 
-Installation:
+## Installation:
 - copy files into prefered directory on webserver/webspace
