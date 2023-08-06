@@ -1,3 +1,5 @@
+![image](https://github.com/fel1xs/Digital-Signage-Manager/assets/140620040/680c76da-9bc6-48b7-9c77-6ca7baed5359)
+
 # Digital-Signage-Manager
 
 by Felix Salzer
